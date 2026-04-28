@@ -1,0 +1,34 @@
+# Dependencias
+node_modules/
+
+# Next.js
+.next/
+out/
+build/
+
+# Electron
+dist/
+dist-electron/
+release/
+
+# Archivos de datos locales (¡CRITICO EVITAR SUBIR ESTOS!)
+data/
+public/uploads/
+*.sqlite
+*.db
+
+# Variables de Entorno
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Sistema Operativo
+.DS_Store
+Thumbs.db

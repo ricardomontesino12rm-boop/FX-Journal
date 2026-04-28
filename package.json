@@ -1,0 +1,64 @@
+{
+  "name": "trading-journal",
+  "version": "0.1.0",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "electron": "electron .",
+    "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && electron .\"",
+    "electron:build": "npm run build && electron-builder"
+  },
+  "dependencies": {
+    "@tiptap/extension-image": "^3.22.4",
+    "@tiptap/pm": "^3.22.4",
+    "@tiptap/react": "^3.22.4",
+    "@tiptap/starter-kit": "^3.22.4",
+    "chart.js": "^4.5.1",
+    "date-fns": "^4.1.0",
+    "html-to-image": "^1.11.13",
+    "lucide-react": "^1.11.0",
+    "next": "16.2.4",
+    "react": "19.2.4",
+    "react-chartjs-2": "^5.3.1",
+    "react-dom": "19.2.4",
+    "react-select": "^5.10.2",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^6.0.1"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "electron": "^28.2.0",
+    "electron-builder": "^24.9.1",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.4",
+    "wait-on": "^7.2.0"
+  },
+  "build": {
+    "appId": "com.fxjournal.app",
+    "productName": "FX Journal",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "server.js",
+      "package.json",
+      "node_modules/**/*",
+      ".next/**/*"
+    ],
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.finance"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  }
+}

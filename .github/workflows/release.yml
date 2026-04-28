@@ -10,10 +10,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: windows-latest
 
     steps:
       - name: Checkout Code
@@ -30,8 +27,11 @@ jobs:
       - name: Build Next.js
         run: npm run build
 
+      - name: Clear Next.js Cache (Prevents Windows MAX_PATH crash)
+        run: Remove-Item -Recurse -Force .next\cache
+
       - name: Build Electron App
-        run: npm run electron:build
+        run: npx electron-builder --win
 
       - name: Publish to GitHub Releases
         uses: softprops/action-gh-release@v2

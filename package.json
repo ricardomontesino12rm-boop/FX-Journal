@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "main": "main.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ricardomontesino12rm-boop/FX-Journal.git"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -10,7 +14,7 @@
     "lint": "eslint",
     "electron": "electron .",
     "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && electron .\"",
-    "electron:build": "npm run build && electron-builder"
+    "electron:build": "npm run build && electron-builder --publish always"
   },
   "dependencies": {
     "@tiptap/extension-image": "^3.22.4",

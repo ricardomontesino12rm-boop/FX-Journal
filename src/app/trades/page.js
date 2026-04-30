@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Download } from 'lucide-react';
 import { Eye } from 'lucide-react';
+import { getAccounts, getTrades } from '@/lib/desktop-api';
 
 export default function Trades() {
   const [trades, setTrades] = useState([]);
@@ -10,18 +11,13 @@ export default function Trades() {
   const [selectedAccountId, setSelectedAccountId] = useState('');
 
   useEffect(() => {
-    fetch('/api/accounts')
-      .then(res => res.json())
-      .then(data => {
-        setAccounts(data);
-      });
+    getAccounts().then(data => {
+      setAccounts(data);
+    });
   }, []);
 
   useEffect(() => {
-    const url = selectedAccountId ? `/api/trades?accountId=${selectedAccountId}` : '/api/trades';
-    fetch(url)
-      .then(res => res.json())
-      .then(data => setTrades(data));
+    getTrades(selectedAccountId).then(data => setTrades(data));
   }, [selectedAccountId]);
 
   const exportToCSV = () => {
@@ -100,7 +96,7 @@ export default function Trades() {
                 <td style={{ fontWeight: 'bold' }}>{trade.rr_ratio ? trade.rr_ratio : '-'}</td>
                 <td><span className={`badge ${trade.status}`}>{trade.status}</span></td>
                 <td>
-                  <Link href={`/trades/${trade.id}`} className="btn btn-secondary" style={{ padding: '6px 12px' }}>
+                  <Link href={`/trades/detail?id=${trade.id}`} className="btn btn-secondary" style={{ padding: '6px 12px' }}>
                     <Eye size={14} /> View
                   </Link>
                 </td>

@@ -12,6 +12,8 @@ import {
   Legend,
   Filler
 } from 'chart.js';
+import { normalizeSignedPnl, normalizeSignedPnlPct } from '@/lib/trade-math';
+import { getAccounts, getTrades } from '@/lib/desktop-api';
 
 ChartJS.register(
   CategoryScale,
@@ -29,8 +31,7 @@ export default function Dashboard() {
   const [selectedAccountId, setSelectedAccountId] = useState('');
   
   useEffect(() => {
-    fetch('/api/accounts')
-      .then(res => res.json())
+    getAccounts()
       .then(data => {
         setAccounts(data);
         if (data.length > 0) setSelectedAccountId(data[0].id.toString());
@@ -39,24 +40,13 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (selectedAccountId) {
-      fetch(`/api/trades?accountId=${selectedAccountId}`)
-        .then(res => res.json())
-        .then(data => setTrades(data));
+      getTrades(selectedAccountId).then(data => setTrades(data));
     }
   }, [selectedAccountId]);
 
   const stats = trades.reduce((acc, trade) => {
-    let pnl = trade.pnl_net || 0;
-    let pnlPct = trade.pnl_percentage || 0;
-    // Ensure correct sign based on status
-    if (trade.status === 'loss') {
-      pnl = -Math.abs(pnl);
-      pnlPct = -Math.abs(pnlPct);
-    }
-    if (trade.status === 'win') {
-      pnl = Math.abs(pnl);
-      pnlPct = Math.abs(pnlPct);
-    }
+    const pnl = normalizeSignedPnl(trade.status, trade.pnl_net);
+    const pnlPct = normalizeSignedPnlPct(trade.status, trade.pnl_percentage);
 
     if (trade.status === 'win') {
       acc.wins += 1;
@@ -98,9 +88,7 @@ export default function Dashboard() {
     if (!acc[t.setup]) acc[t.setup] = { count: 0, wins: 0, pnl: 0 };
     acc[t.setup].count++;
     
-    let pnl = t.pnl_net || 0;
-    if (t.status === 'loss') pnl = -Math.abs(pnl);
-    if (t.status === 'win') pnl = Math.abs(pnl);
+    const pnl = normalizeSignedPnl(t.status, t.pnl_net);
 
     if (t.status === 'win') acc[t.setup].wins++;
     acc[t.setup].pnl += pnl;
@@ -120,9 +108,7 @@ export default function Dashboard() {
   // Trades come from API ordered by entry_date DESC. We need ASC for chart.
   const chronologicalTrades = [...trades].reverse();
   chronologicalTrades.forEach(t => {
-    let pnl = t.pnl_net || 0;
-    if (t.status === 'loss') pnl = -Math.abs(pnl);
-    if (t.status === 'win') pnl = Math.abs(pnl);
+    const pnl = normalizeSignedPnl(t.status, t.pnl_net);
     
     currentEquity += pnl;
     equityData.push(currentEquity);

@@ -4,6 +4,24 @@ import { useRouter } from 'next/navigation';
 import Tiptap from '@/components/Tiptap';
 import CreatableSelect from 'react-select/creatable';
 import { FileText, Target, Activity, Calendar, DollarSign, Brain, BarChart2, Hash, AlertTriangle, PenTool, Clock } from 'lucide-react';
+import { createTrade, getAccounts, getTags } from '@/lib/desktop-api';
+
+function toDateTimeLocalValue(dateInput) {
+  const date = dateInput ? new Date(dateInput) : new Date();
+  if (Number.isNaN(date.getTime())) return '';
+  const timezoneOffsetMs = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - timezoneOffsetMs).toISOString().slice(0, 16);
+}
+
+function getInitialEntryDate() {
+  if (typeof window === 'undefined') return toDateTimeLocalValue();
+  const params = new URLSearchParams(window.location.search);
+  const dateParam = params.get('date');
+  if (dateParam) {
+    return toDateTimeLocalValue(`${dateParam}T09:00`);
+  }
+  return toDateTimeLocalValue();
+}
 
 export default function AddTrade() {
   const router = useRouter();
@@ -20,7 +38,7 @@ export default function AddTrade() {
     setup: 'Breakout',
     mistake: 'None',
     rr_ratio: '',
-    entry_date: new Date().toISOString().slice(0, 16),
+    entry_date: getInitialEntryDate(),
     notes: '<p><strong>Technical Analysis:</strong></p><p></p><p><strong>Psychology:</strong></p><p></p>',
     psychology_score: 5
   });
@@ -32,24 +50,13 @@ export default function AddTrade() {
   });
 
   useEffect(() => {
-    // Check URL for prefilled date from calendar
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const dateParam = params.get('date');
-      if (dateParam) {
-        setFormData(f => ({ ...f, entry_date: `${dateParam}T09:00` }));
-      }
-    }
-
-    fetch('/api/accounts')
-      .then(res => res.json())
+    getAccounts()
       .then(data => {
         setAccounts(data);
         if (data.length > 0) setFormData(f => ({ ...f, account_id: data[0].id }));
       });
       
-    fetch('/api/tags')
-      .then(res => res.json())
+    getTags()
       .then(data => {
         if (data && data.sessions) {
           setTagOptions(data);
@@ -68,22 +75,18 @@ export default function AddTrade() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await fetch('/api/trades', {
-      method: 'POST',
-      body: JSON.stringify({
+    try {
+      await createTrade({
         ...formData,
+        account_id: Number(formData.account_id),
         pnl_net: formData.pnl_net ? parseFloat(formData.pnl_net) : null,
         pnl_percentage: formData.pnl_percentage ? parseFloat(formData.pnl_percentage) : null,
         rr_ratio: formData.rr_ratio ? parseFloat(formData.rr_ratio) : null,
         psychology_score: parseInt(formData.psychology_score)
-      })
-    });
-    
-    if (res.ok) {
+      });
       router.push('/trades');
-    } else {
-      const errorData = await res.json();
-      alert('Error saving trade: ' + errorData.error);
+    } catch (error) {
+      alert('Error saving trade: ' + error.message);
     }
   };
 

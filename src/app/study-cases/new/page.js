@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Tiptap from '@/components/Tiptap';
 import { BookOpen, Save, ArrowLeft } from 'lucide-react';
+import { createStudyCase } from '@/lib/desktop-api';
 
 export default function NewStudyCase() {
   const router = useRouter();
@@ -17,17 +18,12 @@ export default function NewStudyCase() {
     }
     
     setSaving(true);
-    const res = await fetch('/api/study-cases', {
-      method: 'POST',
-      body: JSON.stringify({ title, content })
-    });
-    
-    if (res.ok) {
+    try {
+      await createStudyCase({ title, content });
       router.push('/study-cases');
-    } else {
+    } catch (error) {
       setSaving(false);
-      const err = await res.json();
-      alert('Error saving case: ' + err.error);
+      alert('Error saving case: ' + error.message);
     }
   };
 

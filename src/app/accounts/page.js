@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { Edit2, X, Trash2, Wallet, Award, Activity } from 'lucide-react';
+import { createAccount, deleteAccount, getAccounts, updateAccount } from '@/lib/desktop-api';
 
 export default function Accounts() {
   const [accounts, setAccounts] = useState([]);
@@ -10,53 +11,42 @@ export default function Accounts() {
   const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
-    fetch('/api/accounts').then(res => res.json()).then(setAccounts);
+    getAccounts().then(setAccounts).catch((error) => alert(error.message));
   }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (editingId) {
-      const res = await fetch(`/api/accounts/${editingId}`, {
-        method: 'PUT',
-        body: JSON.stringify({ name, type, initial_balance: parseFloat(balance) })
-      });
-      if (res.ok) {
-        const updatedAcc = await res.json();
+      try {
+        const updatedAcc = await updateAccount(editingId, { name, type, initial_balance: parseFloat(balance) });
         setAccounts(accounts.map(a => a.id === editingId ? updatedAcc : a));
         setEditingId(null);
         setName('');
         setType('personal');
         setBalance('');
-      } else {
-        const errorData = await res.json();
-        alert('Error updating account: ' + errorData.error);
+      } catch (error) {
+        alert('Error updating account: ' + error.message);
       }
     } else {
-      const res = await fetch('/api/accounts', {
-        method: 'POST',
-        body: JSON.stringify({ name, type, initial_balance: parseFloat(balance) })
-      });
-      if (res.ok) {
-        const newAcc = await res.json();
+      try {
+        const newAcc = await createAccount({ name, type, initial_balance: parseFloat(balance) });
         setAccounts([newAcc, ...accounts]);
         setName('');
         setType('personal');
         setBalance('');
-      } else {
-        const errorData = await res.json();
-        alert('Error creating account: ' + errorData.error);
+      } catch (error) {
+        alert('Error creating account: ' + error.message);
       }
     }
   };
 
   const handleDelete = async (id, name) => {
     if (window.confirm(`Are you sure you want to delete the account "${name}"? WARNING: All trades associated with this account will be permanently deleted.`)) {
-      const res = await fetch(`/api/accounts/${id}`, { method: 'DELETE' });
-      if (res.ok) {
+      try {
+        await deleteAccount(id);
         setAccounts(accounts.filter(a => a.id !== id));
-      } else {
-        const errorData = await res.json();
-        alert('Error deleting account: ' + errorData.error);
+      } catch (error) {
+        alert('Error deleting account: ' + error.message);
       }
     }
   };

@@ -1,6 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { TrendingUp, Target, ShieldAlert, Activity, BarChart2, Hash, Percent, DollarSign, ArrowDownRight } from 'lucide-react';
+import { normalizeSignedPnl, normalizeSignedPnlPct } from '@/lib/trade-math';
+import { getAccounts, getTrades } from '@/lib/desktop-api';
 
 export default function Metrics() {
   const [trades, setTrades] = useState([]);
@@ -8,15 +10,10 @@ export default function Metrics() {
   const [selectedAccountId, setSelectedAccountId] = useState('all');
 
   useEffect(() => {
-    fetch('/api/accounts')
-      .then(res => res.json())
-      .then(data => {
-        setAccounts(data);
-      });
-      
-    fetch('/api/trades')
-      .then(res => res.json())
-      .then(data => setTrades(data));
+    getAccounts().then(data => {
+      setAccounts(data);
+    });
+    getTrades().then(data => setTrades(data));
   }, []);
 
   const filteredTrades = selectedAccountId === 'all' 
@@ -43,17 +40,8 @@ export default function Metrics() {
     let currentEquityMoney = 0; 
 
     chronoTrades.forEach(trade => {
-      let pnl = trade.pnl_net || 0;
-      let pnlPct = trade.pnl_percentage || 0;
-
-      // Force logic anti-errors
-      if (trade.status === 'loss') {
-        pnl = -Math.abs(pnl);
-        pnlPct = -Math.abs(pnlPct);
-      } else if (trade.status === 'win') {
-        pnl = Math.abs(pnl);
-        pnlPct = Math.abs(pnlPct);
-      }
+      const pnl = normalizeSignedPnl(trade.status, trade.pnl_net);
+      const pnlPct = normalizeSignedPnlPct(trade.status, trade.pnl_percentage);
 
       totalPnl += pnl;
       totalPnlPercentage += pnlPct;

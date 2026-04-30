@@ -9,7 +9,7 @@ FX Journal is a standalone desktop application that runs entirely on your machin
 - **Advanced Metrics:** Prop-firm level calculations including Win Rate, Profit Factor, Expectancy, and Max Drawdown.
 - **Rich Text Editor:** Built-in Tiptap editor for your Study Cases and trade notes. Paste screenshots directly from TradingView (`Ctrl+V`).
 - **Portfolio Management:** Track multiple accounts (Funded, Challenge, Personal) separately.
-- **Premium OLED UI:** Dark mode by default, built with Next.js and Electron for a buttery-smooth experience.
+- **Premium OLED UI:** Dark mode by default, built with Next.js and Tauri for a lightweight desktop experience.
 
 ## Installation
 Go to the [Releases](https://github.com/yourusername/fx-journal/releases) tab and download the latest installer for your Operating System (`.exe` for Windows, `.dmg` for Mac, `.AppImage` for Linux).
@@ -30,12 +30,12 @@ If you want to contribute or build the app from source:
 
 3. Run in development mode:
    ```bash
-   npm run electron:dev
+   npm run tauri:dev
    ```
 
 4. Build the executable:
    ```bash
-   npm run electron:build
+   npm run tauri:build
    ```
 
 ## License

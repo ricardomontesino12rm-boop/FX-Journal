@@ -25,18 +25,17 @@ jobs:
         run: npm install
 
       - name: Build Next.js
-        run: npm run build
+        run: npm run build:web
 
       - name: Clear Next.js Cache (Prevents Windows MAX_PATH crash)
         run: Remove-Item -Recurse -Force .next\cache
 
-      - name: Build Electron App
-        run: npx electron-builder --win
+      - name: Build Tauri App
+        run: npx tauri build --target x86_64-pc-windows-msvc
 
       - name: Publish to GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist/*.exe
-            dist/*.dmg
-            dist/*.AppImage
+            src-tauri/target/x86_64-pc-windows-msvc/release/bundle/**/*.exe
+            src-tauri/target/x86_64-pc-windows-msvc/release/bundle/**/*.msi

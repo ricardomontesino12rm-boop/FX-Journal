@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { startOfMonth, endOfMonth, eachDayOfInterval, format, isSameMonth, isToday } from 'date-fns';
 import { ChevronLeft, ChevronRight, TrendingUp, Target, Plus } from 'lucide-react';
+import { normalizeSignedPnl } from '@/lib/trade-math';
+import { getTrades } from '@/lib/desktop-api';
 
 export default function Calendar() {
   const router = useRouter();
@@ -11,9 +13,7 @@ export default function Calendar() {
   const [hoveredDate, setHoveredDate] = useState(null);
 
   useEffect(() => {
-    fetch('/api/trades')
-      .then(res => res.json())
-      .then(data => setTrades(data));
+    getTrades().then(data => setTrades(data));
   }, []);
 
   const days = eachDayOfInterval({
@@ -22,14 +22,13 @@ export default function Calendar() {
   });
 
   const tradesByDate = trades.reduce((acc, trade) => {
-    const dateStr = trade.entry_date.split('T')[0];
+    const parsedDate = new Date(trade.entry_date);
+    if (Number.isNaN(parsedDate.getTime())) return acc;
+    const dateStr = format(parsedDate, 'yyyy-MM-dd');
     if (!acc[dateStr]) acc[dateStr] = { count: 0, pnl: 0, wins: 0, losses: 0 };
     acc[dateStr].count += 1;
     
-    // Anti-error PNL logic
-    let pnl = trade.pnl_net || 0;
-    if (trade.status === 'loss') pnl = -Math.abs(pnl);
-    if (trade.status === 'win') pnl = Math.abs(pnl);
+    const pnl = normalizeSignedPnl(trade.status, trade.pnl_net);
     
     acc[dateStr].pnl += pnl;
     if (trade.status === 'win') acc[dateStr].wins += 1;

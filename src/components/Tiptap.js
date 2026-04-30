@@ -4,6 +4,7 @@ import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import { Image as ImageIcon, Bold, Italic, List, Heading2 } from 'lucide-react';
 import { useRef } from 'react';
+import { uploadImage as uploadImageCommand } from '@/lib/desktop-api';
 
 export default function Tiptap({ content, onChange }) {
   const fileInputRef = useRef(null);
@@ -30,7 +31,7 @@ export default function Tiptap({ content, onChange }) {
           if (item.type.indexOf('image') === 0) {
             const file = item.getAsFile();
             if (file) {
-              uploadImage(file);
+              handleImageUpload(file);
               return true; // Stop default paste
             }
           }
@@ -43,26 +44,30 @@ export default function Tiptap({ content, onChange }) {
     },
   });
 
-  const uploadImage = async (file) => {
-    // You could just insert base64 if it's small, but we will upload to API
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('tradeId', 'temp'); // We might not have tradeId yet, this is fine
-    
-    const res = await fetch('/api/upload', {
-      method: 'POST',
-      body: formData,
-    });
-    
-    if (res.ok) {
-      const data = await res.json();
-      editor.chain().focus().setImage({ src: data.image.file_path }).run();
+  const handleImageUpload = async (file) => {
+    try {
+      const bytes = await file.arrayBuffer();
+      const binary = new Uint8Array(bytes);
+      let binaryString = '';
+      for (const byte of binary) binaryString += String.fromCharCode(byte);
+      const base64Data = btoa(binaryString);
+
+      const data = await uploadImageCommand({
+        file_name: file.name,
+        mime_type: file.type || 'image/png',
+        base64_data: base64Data,
+        trade_id: null,
+        description: ''
+      });
+      editor.chain().focus().setImage({ src: data.file_path }).run();
+    } catch (error) {
+      console.error('Image upload failed', error);
     }
   };
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
-      uploadImage(e.target.files[0]);
+      handleImageUpload(e.target.files[0]);
     }
   };
 

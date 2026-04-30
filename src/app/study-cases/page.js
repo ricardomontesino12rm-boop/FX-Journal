@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { BookOpen, Plus, Clock, Trash2 } from 'lucide-react';
+import { deleteStudyCase, getStudyCases } from '@/lib/desktop-api';
 
 export default function StudyCases() {
   const router = useRouter();
@@ -10,8 +11,7 @@ export default function StudyCases() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/study-cases')
-      .then(res => res.json())
+    getStudyCases()
       .then(data => {
         setCases(data);
         setLoading(false);
@@ -23,9 +23,11 @@ export default function StudyCases() {
     e.preventDefault();
     e.stopPropagation();
     if (window.confirm(`Are you sure you want to delete the study case "${title}"?`)) {
-      const res = await fetch(`/api/study-cases/${id}`, { method: 'DELETE' });
-      if (res.ok) {
+      try {
+        await deleteStudyCase(id);
         setCases(cases.filter(c => c.id !== id));
+      } catch (error) {
+        alert(error.message);
       }
     }
   };
@@ -54,7 +56,7 @@ export default function StudyCases() {
         <div className="form-card-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
           {cases.map(c => (
             <div key={c.id} className="form-card" style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer', transition: 'all 0.2s' }} 
-                 onClick={() => router.push(`/study-cases/${c.id}`)}
+                 onClick={() => router.push(`/study-cases/edit?id=${c.id}`)}
                  onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
                  onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
               

@@ -2,7 +2,6 @@
   "name": "trading-journal",
   "version": "1.0.3",
   "private": true,
-  "main": "main.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/ricardomontesino12rm-boop/FX-Journal.git"
@@ -10,13 +9,14 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:web": "next build",
     "start": "next start",
     "lint": "eslint",
-    "electron": "electron .",
-    "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && electron .\"",
-    "electron:build": "npm run build && electron-builder"
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build"
   },
   "dependencies": {
+    "@tauri-apps/api": "^2.11.0",
     "@tiptap/extension-image": "^3.22.4",
     "@tiptap/pm": "^3.22.4",
     "@tiptap/react": "^3.22.4",
@@ -34,35 +34,8 @@
     "sqlite3": "^6.0.1"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2",
-    "electron": "^28.2.0",
-    "electron-builder": "^24.9.1",
+    "@tauri-apps/cli": "^2.10.1",
     "eslint": "^9",
-    "eslint-config-next": "16.2.4",
-    "wait-on": "^7.2.0"
-  },
-  "build": {
-    "appId": "com.fxjournal.app",
-    "productName": "FX Journal",
-    "directories": {
-      "output": "dist"
-    },
-    "files": [
-      "main.js",
-      "server.js",
-      "package.json",
-      "node_modules/**/*",
-      ".next/**/*"
-    ],
-    "mac": {
-      "target": "dmg",
-      "category": "public.app-category.finance"
-    },
-    "win": {
-      "target": "nsis"
-    },
-    "linux": {
-      "target": "AppImage"
-    }
+    "eslint-config-next": "16.2.4"
   }
 }
